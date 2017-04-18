@@ -16,7 +16,25 @@ class UsersController {
 	getAll() {
 		return this.Users.find()
 			.then(result => defaultResponse(result))
-			.catch(err => errorResponse(err.message))
+			.catch(err => errorResponse(err))
+	}
+
+	getById(id) {
+		return this.Users.findById(id)
+			.then(result => defaultResponse(result))
+			.catch(err => errorResponse(err))
+	}
+
+	create(data) {
+		return this.Users.create(data)
+			.then(result => {
+				if (result) {
+					return defaultResponse(result, 201)
+				} else {
+					return errorResponse('', 422);
+				}
+			})
+			.catch(err => errorResponse(err.message, 422))
 	}
 }
 

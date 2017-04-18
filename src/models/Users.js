@@ -1,4 +1,6 @@
 import mongoose from 'mongoose';
+import bcrypt from 'bcrypt';
+
 const Schema = mongoose.Schema;
 
 const userSchema = new Schema({
@@ -18,5 +20,23 @@ const userSchema = new Schema({
 		select: false
 	}
 });
+
+userSchema.pre('save', function(next) {
+	const user = this;
+	const saltrounds = 10;
+
+	bcrypt.hash(user.password, saltrounds, function(err, hashedPw) {
+		user.set('password', hashedPw)
+		next();
+	});
+
+})
+
+userSchema.methods.checkPassword = function (plainPassword, callback) {
+	bcrypt.compare(plainPassword, this.password, function(err, isMatch) {
+		if (err) { return callback(err);}
+		callback(null, isMatch);
+	})
+};
 
 export default mongoose.model('User', userSchema);
