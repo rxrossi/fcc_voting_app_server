@@ -36,6 +36,18 @@ class UsersController {
 			})
 			.catch(err => errorResponse(err.message, 422))
 	}
+
+	update(id, data) {
+		return this.Users.findByIdAndUpdate(id, {$set: data}, {new: true})
+			.then(user => {
+				if (user) {
+					return defaultResponse(user)
+				} else {
+					return errorResponse(null, 422)
+				}
+			})
+			.catch(err => errorResponse(err.message, 422))
+	}
 }
 
 export default UsersController;

@@ -29,8 +29,17 @@ userSchema.pre('save', function(next) {
 		user.set('password', hashedPw)
 		next();
 	});
-
 })
+
+userSchema.pre('update', function(next) {
+	const saltrounds = 10;
+
+	bcrypt.hash(user.password, saltrounds, function(err, hashedPw) {
+		this.update({}, {$set: {password: hashedPw}})
+		next();
+	});
+})
+
 
 userSchema.methods.checkPassword = function (plainPassword, callback) {
 	bcrypt.compare(plainPassword, this.password, function(err, isMatch) {
