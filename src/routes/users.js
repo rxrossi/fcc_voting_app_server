@@ -32,13 +32,10 @@ export default app => {
 				.catch(err => res.send(err.data));
 		})
 		.put(authenticate(), (req, res) => {
-
 			const idToEdit = req.params.id+'';
 			const currUserId = req.user._id+'';
 
-			if (idToEdit !== currUserId) { return res.sendStatus(403); }
-
-			usersController.update(idToEdit, req.body)
+			usersController.update(idToEdit, currUserId, req.body)
 				.then(response => {
 					res.status(response.statusCode)
 					res.json(response.data)

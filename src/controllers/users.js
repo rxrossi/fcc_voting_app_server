@@ -37,8 +37,13 @@ class UsersController {
 			.catch(err => errorResponse(err.message, 422))
 	}
 
-	update(id, data) {
-		return this.Users.findById(id)
+	update(idToEdit, currUserId, data) {
+		if (idToEdit !== currUserId) {
+			const response = errorResponse("editing different user", 403);
+			return Promise.resolve(response);
+		}
+
+		return this.Users.findById(idToEdit)
 			.then(user => {
 				user._doc  = Object.assign({}, user._doc, data) ;
 				return user.save()
