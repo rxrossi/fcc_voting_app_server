@@ -136,7 +136,6 @@ describe('Users routes', () => {
 
 			let oldPassOnDb;
 			let passwordOnDb;
-			//let user;
 
 			before( done => {
 				Users.findById(defaultUserId).select('+password')
