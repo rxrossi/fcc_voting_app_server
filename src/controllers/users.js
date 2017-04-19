@@ -38,16 +38,17 @@ class UsersController {
 	}
 
 	update(id, data) {
-		return this.Users.findByIdAndUpdate(id, {$set: data}, {new: true})
+		return this.Users.findById(id)
 			.then(user => {
-				if (user) {
-					return defaultResponse(user)
-				} else {
-					return errorResponse(null, 422)
-				}
+				user._doc  = Object.assign({}, user._doc, data) ;
+				return user.save()
 			})
-			.catch(err => errorResponse(err.message, 422))
+			.then(updatedUser => {
+				return defaultResponse(updatedUser)
+			})
+			.catch(err => errorResponse(err, 422))
 	}
 }
 
 export default UsersController;
+

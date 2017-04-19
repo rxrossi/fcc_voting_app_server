@@ -24,18 +24,11 @@ const userSchema = new Schema({
 userSchema.pre('save', function(next) {
 	const user = this;
 	const saltrounds = 10;
+	//console.log("pre save hook", user)
 
 	bcrypt.hash(user.password, saltrounds, function(err, hashedPw) {
+		//console.log('pre save hook hash', user.password, hashedPw)
 		user.set('password', hashedPw)
-		next();
-	});
-})
-
-userSchema.pre('update', function(next) {
-	const saltrounds = 10;
-
-	bcrypt.hash(user.password, saltrounds, function(err, hashedPw) {
-		this.update({}, {$set: {password: hashedPw}})
 		next();
 	});
 })

@@ -17,7 +17,7 @@ describe('Users routes', () => {
 
 	let defaultUserId;
 	let token;
-	beforeEach(done => {
+	before(done => {
 		Users
 			.deleteMany({})
 			.then(() => Users.create(defaultUser))
@@ -92,7 +92,7 @@ describe('Users routes', () => {
 				})
 		});
 
-		it('returns 200 code when a authenticated user sends a put request', (done)=> {
+		it('returns 200 when authenticated user sends a put to his id', (done)=> {
 			request
 				.put('/users/'+defaultUserId)
 				.set('Authorization', `JWT ${token}`)
@@ -112,7 +112,7 @@ describe('Users routes', () => {
 				})
 		})
 
-		it('returns the edited user when user edits himself', (done)=> {
+		it('returns the edited user data when user edits himself', (done)=> {
 			const updatedUser = {
 				email: 'newEmail@mail.com',
 				name: 'new name'
@@ -125,6 +125,7 @@ describe('Users routes', () => {
 				.end((req, res) => {
 					expect(res.body.name).to.be.eql(updatedUser.name);
 					expect(res.body.email).to.be.eql(updatedUser.email);
+					expect(res.body.password).to.not.exist;
 					done();
 				})
 		});
@@ -132,27 +133,32 @@ describe('Users routes', () => {
 		describe('Password update', () => {
 
 			const newPassword = 'newpass123';
+
+			let oldPassOnDb;
 			let passwordOnDb;
-			let user;
+			//let user;
 
-			beforeEach( done => {
-
-				request
-					.put('/users/'+defaultUserId)
-					.set('Authorization', `JWT ${token}`)
-					.send({password: newPassword})
-					.end((req, res) => {
-						Users.findById(defaultUserId).select('+password')
-							.then(result => {
-								user = result;
-								passwordOnDb = result.password
+			before( done => {
+				Users.findById(defaultUserId).select('+password')
+					.then(user => {
+						return oldPassOnDb = user.password;
+					})
+					.then(() => {
+						 request
+							.put('/users/'+defaultUserId)
+							.set('Authorization', `JWT ${token}`)
+							.send({password: newPassword, name: 'John NP'})
+							.end((req, res) => {
+								Users.findById(defaultUserId).select('+password')
+									.then(user => {
+										return passwordOnDb = user.password;
+									})
 								done();
 							});
-					});
-
+					})
 			});
 
-			it('expects that retrivied password is not empty', (done)=> {
+			it('expects that new password is not empty after put request', (done)=> {
 					expect(passwordOnDb).to.exist;
 					done();
 			});
@@ -161,13 +167,13 @@ describe('Users routes', () => {
 				expect(passwordOnDb).to.not.eql(newPassword);
 			});
 
-			xit('expects that the new password pass a bcrypt compare', (done)=> {
-
-				console.log(passwordOnDb, newPassword);
-				user.checkPassword(newPassword, function (err, isMatch) {
-					//console.log(typeof isMatch, isMatch)
-					expect(isMatch).to.be.true;
-					done();
+			it('expects that the new password pass the bcrypt compare', (done)=> {
+				Users.findById(defaultUserId).select('+password')
+					.then(user => {
+						user.checkPassword(newPassword, function (err, isMatch) {
+						expect(isMatch).to.be.true;
+						done();
+					})
 				});
 
 
