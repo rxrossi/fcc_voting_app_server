@@ -56,6 +56,7 @@ describe.only('Polls Route', () => {
 					const firstPoll = res.body[0];
 					expect(firstPoll.name).to.be.eql(defaultPoll.name);
 					expect(firstPoll.opts.length).to.be.eql(2);
+					expect(firstPoll.opts[0].name).to.be.eql(defaultPoll.opts[0].name);
 					done();
 				})
 		})
