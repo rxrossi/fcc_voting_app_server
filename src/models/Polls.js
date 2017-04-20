@@ -10,7 +10,8 @@ const pollsSchema = new Schema({
 		{
 			name: { type: String, required: true },
 		}
-	]
+	],
+	_creator: { type: String, required: true, ref: 'User'}
 });
 
-export default mongoose.model('Polls', pollsSchema);
+export default mongoose.model('Poll', pollsSchema);
