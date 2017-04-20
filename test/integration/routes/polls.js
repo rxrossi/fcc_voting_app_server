@@ -48,6 +48,7 @@ describe.only('Polls Route', () => {
 			{name: 'Superman'}
 		]
 	};
+
 	describe('GET /polls', () => {
 		it('returns a list of polls', (done) => {
 			request
@@ -60,5 +61,47 @@ describe.only('Polls Route', () => {
 					done();
 				})
 		})
+	});
+
+	xdescribe('GET /polls/:id', () => {
+		it(`returns the '${defaultPoll.name}' poll record`, (done)=> {
+			request
+				.get('/polls/'+defaultPollId)
+				.end((req, res) => {
+					const receivedPoll = res.body;
+					expect(receivedPoll.name).to.be.eql(defaultPoll.name);
+					done();
+				})
+		});
+	});
+
+	xdescribe('POST /polls', () => {
+		it('receive the create poll', (done)=> {
+			const newPoll = {
+				name: 'Best movie',
+				opts: [
+					{name: 'Green mile'},
+					{name: 'Fast & Furious'},
+					{name: 'Star Trek 2009'}
+				]
+			};
+			request
+				.post('/polls')
+				.end((req, res) => {
+					const receivedPoll = res.body;
+					expect(receivedPoll.name).to.be.eql(newPoll.name);
+					expect(receivedPoll.opts.length).to.be.eql(newPoll.opts.length);
+					expect(receivedPoll.opts[2].name).to.be.eql(newPoll.opts[2].name);
+					done();
+				})
+		});
+	});
+
+	xdescribe('POST /polls/:id', () => {
+		describe('used to send a new opt to the poll', () => {
+			it('returns the polls.opts array inclding the newly added opt', ()=> {
+				
+			});
+		});
 	});
 });
