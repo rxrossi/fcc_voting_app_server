@@ -6,7 +6,7 @@ const defaultResponse = (data, statusCode = 200) => ({
 });
 
 const errorResponse = (message, statusCode = 400) =>
-	defaultResponse({error: message}, statusCode);
+	defaultResponse({ error: message }, statusCode);
 
 class PollsController {
 	constructor(Model = Polls) {
@@ -51,12 +51,17 @@ class PollsController {
 			return this.Polls.findById(pollId)
 				.then(poll => {
 					let votedOpt = poll.opts.find(opt => opt.name === votedOptArg.name);
-					const votedOptIndex = poll.opts.indexOf(votedOpt);
+					if (votedOpt) {
+						const votedOptIndex = poll.opts.indexOf(votedOpt);
 
-					votedOpt.value += 1;
-					poll.opts.fill(votedOpt, votedOptIndex, votedOptIndex+1);
+						votedOpt.value += 1;
+						poll.opts.fill(votedOpt, votedOptIndex, votedOptIndex+1);
 
-					return poll.save();
+						return poll.save();
+					} else {
+						poll.opts.push(votedOptArg);
+						return poll.save();
+					}
 				})
 				.then(savedPoll => {
 					return defaultResponse(savedPoll.opts)
@@ -64,10 +69,18 @@ class PollsController {
 				.catch(err => errorResponse(err))
 
 		} else {
-			return Promise.resolve(errorResponse("invalid format, expected an obj with a key name { name: 'name'}", 422));
+			return Promise.resolve(
+				errorResponse("invalid format, expected an obj with a key name { name: 'name'}", 422)
+			);
+
 		}
 	}
 
+	delete(pollId) {
+		return this.Polls.deleteOne({_id: pollId})
+			.then(() => defaultResponse('', 204))
+			.catch((err) => errorResponse(err))
+	}
 }
 
 export default PollsController;

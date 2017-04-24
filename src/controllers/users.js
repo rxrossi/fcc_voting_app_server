@@ -41,7 +41,7 @@ class UsersController {
 		if (idToEdit !== currUserId) {
 			const response = errorResponse("editing different user", 403);
 			return Promise.resolve(response);
-		}
+			}
 
 		return this.Users.findById(idToEdit)
 			.then(user => {
