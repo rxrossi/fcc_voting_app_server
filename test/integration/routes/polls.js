@@ -3,7 +3,7 @@ import config from '../../../config';
 import Users from '../../../src/models/Users';
 import Polls from '../../../src/models/Polls';
 
-describe('Polls Route', () => {
+describe.only('Polls Route', () => {
 	const defaultUser = {
 		name: 'John',
 		email: 'john@mail.com',
@@ -22,13 +22,13 @@ describe('Polls Route', () => {
 	const defaultPoll = {
 		name: 'Best hero',
 		opts: [
-			{name: 'Batman'},
-			{name: 'Superman'}
+			{name: 'Batman', value: 0},
+			{name: 'Superman', value: 0}
 		],
 		_creator: null //will be defined on the before block bellow
 	};
 
-	before(done => {
+	beforeEach(done => {
 		Users
 			.deleteMany({})
 			.then(() => Users.create(defaultUser))
@@ -67,7 +67,7 @@ describe('Polls Route', () => {
 	});
 
 	describe('GET /polls/byuser/:userId', () => {
-		describe('returns all the polls created by a user', () => {
+		describe('returns all the polls created by an user', () => {
 			it('returns the defaultPoll when when called with the defaultUserId', (done)=> {
 			request
 				.get('/polls/byuser/'+defaultUserId)
@@ -83,7 +83,7 @@ describe('Polls Route', () => {
 
 
 	describe('GET /polls/:id', () => {
-		it(`returns the '${defaultPoll.name}' poll record`, (done)=> {
+		it(`returns the defaultPoll record when its id is sent`, (done)=> {
 			request
 				.get('/polls/'+defaultPollId)
 				.end((req, res) => {
@@ -130,46 +130,61 @@ describe('Polls Route', () => {
 		});
 	});
 
-	describe.only('PUT /polls/:id', () => {
+	describe('PUT /polls/:id', () => {
 		describe('Sending anything different than {name: "name"} return an 422 error', () => {
 			it('sending more than one options returns a 422', (done)=> {
 				request
 					.put('/polls/'+defaultPollId)
-					.send({name: 'Batman', name: 'Superman'})
+					.send([{name: 'Batman'}, {name: 'Superman'}])
 					.end((req, res) => {
 						expect(res.status).to.be.eql(422);
+						done();
 					})
-				done();
 			});
 		});
 
-		describe('Sending and existing option return all the options with the value of the sent one update to +1', () => {
-			const votedOpt = { name: defaultPoll.opts[defaultPoll.opts.length -1].name };
-			const expectedAnswer = defaultPoll.opts.slice(0, defaultPoll.opts.length-1)
-																						 .concat({name: votedOpt.name, votes: 1});
-			//console.log({expectedAnswer})
-			before(done => {
+		describe('Sending an existing option, the last one of defaultPoll', () => {
+			const lastOpt = defaultPoll.opts[defaultPoll.opts.length-1]
+			const votedOpt = { name: lastOpt.name };
+			const updatedVoteValue = lastOpt.value +1;
+			let receivedOpts;
+
+			beforeEach(done => {
 				request
 					.put('/polls/'+defaultPollId)
 					.send(votedOpt)
 					.end((req, res) => {
-
+						receivedOpts = res.body;
+						done();
 					})
+			});
+
+			it(`expects the value of ${votedOpt.name} to be updated on the received json`, ()=> {
+				expect(receivedOpts[receivedOpts.length -1].value).to.be.eql(updatedVoteValue);
+			});
+
+			it(`checks on DB if the value of ${votedOpt.name} was really updated`, (done)=> {
+				Polls.findById(defaultPollId)
+					.then(poll => {
+						expect(poll.opts[1].value).to.be.eql(updatedVoteValue);
+						return done();
+					})
+					.catch(err => console.error(err))
 			});
 		});
 
-		xdescribe('puts a new option for defaultPoll, receives the opts with the new one having zero votes', ()=> {
+		describe('PUT a new option for defaultPoll', ()=> {
 
 			const newOpt = {name: 'SpongeBob'};
 			const expectedAnswer = defaultPoll.opts.concat({ name: newOpt.name, votes: 0});
 			let receivedOpts;
 
-			before((done) => {
+			beforeEach((done) => {
 				request
 					.put('/polls/'+defaultPollId)
 					.send(newOpt)
 					.end((req, res) => {
-						receivedOpts = res.body[0].opts;
+						receivedOpts = res.body;
 						done();
 					});
 			})
@@ -178,7 +193,7 @@ describe('Polls Route', () => {
 				expect(receivedOpts.length).to.be.eql(expectedAnswer.length)
 			});
 
-			it('expect that every opt in expectedAnswer is found on receivedAnswer', ()=> {
+			xit('expect that every opt in expectedAnswer is found on receivedAnswer', ()=> {
 				expectedAnswer.forEach((opt, key) => {
 					expect(opt.name).to.be.eql(receivedOpts[key].name);
 					console.log(receivedOpts[key].name)

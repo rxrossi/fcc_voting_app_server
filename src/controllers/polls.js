@@ -46,16 +46,25 @@ class PollsController {
 			.catch(err => errorResponse(err))
 	}
 
-	vote(pollId, voteObj) {
-		if(voteObj.name) {
-			this.Polls.find({_id: pollId})
+	vote(pollId, votedOptArg) {
+		if(votedOptArg.name && Object.keys(votedOptArg).length === 1) {
+			return this.Polls.findById(pollId)
 				.then(poll => {
-					
+					let votedOpt = poll.opts.find(opt => opt.name === votedOptArg.name);
+					const votedOptIndex = poll.opts.indexOf(votedOpt);
+
+					votedOpt.value += 1;
+					poll.opts.fill(votedOpt, votedOptIndex, votedOptIndex+1);
+
+					return poll.save();
+				})
+				.then(savedPoll => {
+					return defaultResponse(savedPoll.opts)
 				})
 				.catch(err => errorResponse(err))
 
 		} else {
-			return Promise.resolve(errorResponse("invalid format, expected { name: 'name'}", 422));
+			return Promise.resolve(errorResponse("invalid format, expected an obj with a key name { name: 'name'}", 422));
 		}
 	}
 

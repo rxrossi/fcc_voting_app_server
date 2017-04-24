@@ -9,7 +9,8 @@ const pollsSchema = new Schema({
 	opts: [
 		{
 			name: { type: String, required: true },
-		}
+			value: {type: Number, required: true,  default: 0}
+		},
 	],
 	_creator: { type: String, required: true, ref: 'User'}
 });
