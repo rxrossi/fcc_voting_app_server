@@ -1,0 +1,4 @@
+--require test/integration/helpers.js
+--reporter tap
+--compilers js:babel-core/register
+--slow 5000

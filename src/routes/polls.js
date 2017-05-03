@@ -44,4 +44,11 @@ export default app => {
 					res.json(response.data)
 				})
 		})
+		.delete(authenticate(), (req, res) => {
+			pollscontroller.delete(req.params.id)
+				.then(response => {
+					res.status(response.statusCode);
+					res.json(response.data);
+				})
+		})
 };

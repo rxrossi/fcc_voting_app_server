@@ -10,7 +10,7 @@ describe.only('Polls Route', () => {
 		password: '12345'
 	};
 
-  let request;
+	let request;
 	before(() => {
 		setupApp()
 			.then(app => request = supertest(app))
@@ -69,14 +69,14 @@ describe.only('Polls Route', () => {
 	describe('GET /polls/byuser/:userId', () => {
 		describe('returns all the polls created by an user', () => {
 			it('returns the defaultPoll when when called with the defaultUserId', (done)=> {
-			request
-				.get('/polls/byuser/'+defaultUserId)
-				.end((req, res) => {
-					expect(res.status).to.be.eql(200);
-					const firstPoll = res.body[0];
-					expect(firstPoll.name).to.be.eql(defaultPoll.name);
-					done();
-				});
+				request
+					.get('/polls/byuser/'+defaultUserId)
+					.end((req, res) => {
+						expect(res.status).to.be.eql(200);
+						const firstPoll = res.body[0];
+						expect(firstPoll.name).to.be.eql(defaultPoll.name);
+						done();
+					});
 			});
 		});
 	});
@@ -193,23 +193,38 @@ describe.only('Polls Route', () => {
 				expect(receivedOpts.length).to.be.eql(expectedAnswer.length)
 			});
 
-			xit('expect that every opt in expectedAnswer is found on receivedAnswer', ()=> {
+			it('expect that every opt in expectedAnswer is found on receivedAnswer', ()=> {
 				expectedAnswer.forEach((opt, key) => {
 					expect(opt.name).to.be.eql(receivedOpts[key].name);
-					console.log(receivedOpts[key].name)
 				})
 			});
 
 		});
 	});
 
-	xdescribe('DELETE /pools/:id', () => {
+	describe('DELETE /pools/:id', () => {
 		describe('an authenticated user can delete his own pools', () => {
-			it('returns 204 when deleting one of his polls', ()=> {
-
+			it('returns 401 when deleting a different poll', (done)=> {
+				request
+					.delete('/polls/'+defaultPollId)
+					.end((req, res) => {
+						expect(res.status).to.be.eql(401);
+						done();
+					})
 			});
-			it('returns 401 when deleting a different poll', ()=> {
 
+			it('returns 204 when deleting one of his polls', (done)=> {
+				request
+					.delete('/polls/'+defaultPollId)
+					.set('Authorization', `JWT ${token}`)
+					.end((req, res) => {
+						Polls.findById(defaultPollId)
+							.then(poll => {
+								expect(poll).to.be.null;
+								expect(res.status).to.be.eql(204);
+								done();
+							})
+					})
 			});
 		});
 	});
