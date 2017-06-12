@@ -14,7 +14,8 @@ export default app => {
 						if (isMatch) {
 							const timestamp = new Date().getTime();
 							const token = jwt.encode({sub: user._id, iat: timestamp}, config.jwtSecret)
-							res.json({ token });
+							user.password = '';
+							res.json({ token, user });
 						} else {
 							res.sendStatus(401)
 						}

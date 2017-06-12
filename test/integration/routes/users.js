@@ -150,9 +150,9 @@ describe('Users routes', () => {
 							.end((req, res) => {
 								Users.findById(defaultUserId).select('+password')
 									.then(user => {
-										return passwordOnDb = user.password;
+										passwordOnDb = user.password;
 									})
-								done();
+									.then(() => done())
 							});
 					})
 			});

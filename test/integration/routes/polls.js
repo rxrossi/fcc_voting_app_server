@@ -3,7 +3,7 @@ import config from '../../../config';
 import Users from '../../../src/models/Users';
 import Polls from '../../../src/models/Polls';
 
-describe.only('Polls Route', () => {
+describe('Polls Route', () => {
 	const defaultUser = {
 		name: 'John',
 		email: 'john@mail.com',
