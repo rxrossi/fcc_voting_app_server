@@ -6,3 +6,5 @@ The expected content for this file is something like this:
 		jwtSecret: 'str'
 	}
 ```
+
+TODO: not passing email and password for post auth route crashes the application (ex.: passing only email)
